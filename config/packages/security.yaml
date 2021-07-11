@@ -1,0 +1,56 @@
+# app/config/security.yml
+security:
+    encoders:
+        FOS\UserBundle\Model\UserInterface: auto
+
+    role_hierarchy:
+        ROLE_CITIZEN:     ROLE_USER 
+        ROLE_MODERATOR:   ROLE_CITIZEN
+        ROLE_ADMIN:       ROLE_MODERATOR
+        ROLE_SUPER_ADMIN: ROLE_ADMIN
+
+    providers:
+        fos_userbundle:
+            id: fos_user.user_provider.username
+
+    firewalls:
+        login:
+            pattern:  ^/api/login
+            stateless: true
+            anonymous: true
+            json_login:
+                check_path:               /api/login_check
+                success_handler:          lexik_jwt_authentication.handler.authentication_success
+                failure_handler:          lexik_jwt_authentication.handler.authentication_failure
+        api:
+            pattern:   ^/api/
+            stateless: true
+            anonymous: true
+            guard:
+                authenticators:
+                     - lexik_jwt_authentication.jwt_token_authenticator
+        main:
+            pattern: ^/
+            user_checker: security.user_checker
+            form_login:
+                provider: fos_userbundle
+                csrf_token_generator: security.csrf.token_manager
+
+            logout:       true
+            anonymous:    true
+
+    access_control:
+        - { path: ^/app/security/register, roles: IS_AUTHENTICATED_ANONYMOUSLY } 
+        - { path: ^/api/login,    roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/resources/, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/resources, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: /api/resource_content_values, roles: IS_AUTHENTICATED_ANONYMOUSLY}
+        - { path: ^/api/resource_attributes, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/resource_types, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/categories, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/type_of_relationships, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/comments/, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/comments, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/,         roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api,          roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/,          roles: IS_AUTHENTICATED_ANONYMOUSLY }

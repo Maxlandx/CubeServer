@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Repository;
+
+use App\Entity\User;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
+
+/**
+ * @method User|null find($id, $lockMode = null, $lockVersion = null)
+ * @method User|null findOneBy(array $criteria, array $orderBy = null)
+ * @method User[]    findAll()
+ * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
+class UserRepository extends ServiceEntityRepository
+{
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, User::class);
+    }
+
+    /**
+     * Search users by a query
+     * @param  string      $query     
+     * @param  int|integer $maxResults default 15
+     * @return User[]
+     */
+    public function search(string $query, int $maxResults = 15) : array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('LOWER(u.firstname) like LOWER(:query) or LOWER(u.lastname) like LOWER(:query)')
+            ->setParameter('query', '%'.$query.'%')
+            ->setMaxResults($maxResults)
+            ->getQuery()
+            ->getResult();
+    }
+}
